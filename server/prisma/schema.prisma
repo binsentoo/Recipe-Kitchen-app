@@ -35,14 +35,18 @@ model RecipeIngredient {
 model RecipeStep {
   id            String @id @default(cuid())
   recipeId      String
-  stepNumber   Int
+  stepNumber    Int
   description   String
 
   recipe Recipe @relation(fields: [recipeId], references: [id], onDelete: Cascade)
 }
 
-/*FRIDGE…
-FRIDGE_ITEM
-name
-amount
-expiration*/
+model FridgeItem {
+  id            String @id @default(cuid())
+  //fridgeId      String
+  quantity      Int
+  unit          String
+  expiration    DateTime
+
+  //fridge Fridge @relation(fields: [fridgeId], references: [id], onDelete: Cascade)
+}
