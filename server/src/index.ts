@@ -9,7 +9,7 @@ app.use(cors())
 app.use(express.json())
 
 app.use('/api/recipes', recipesRouter)
-app.use('/app/fridge', fridgeRouter)
+app.use('/api/fridge', fridgeRouter)
 const PORT = 3000
 
 app.listen(PORT, () => {
