@@ -5,6 +5,19 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { Input } from '@/components/ui/input'
 import { Spinner } from "@/components/ui/spinner"
 import { ButtonGroup } from "@/components/ui/button-group"
+import { ToggleGroup, ToggleGroupItem } from "@/components/ui/toggle-group"
+import { toast } from "sonner"
+import { Textarea } from "@/components/ui/textarea"
+import { QRCodeSVG } from 'qrcode.react'
+import {
+  Dialog,
+  DialogContent,
+  DialogDescription,
+  DialogFooter,
+  DialogHeader,
+  DialogTitle,
+  DialogClose,
+} from "@/components/ui/dialog"
 
 interface Recipe {
   id: string
@@ -35,6 +48,7 @@ function RecipesPage() {
   { name: '', quantity: '', unit: '' }])
   const [steps, setSteps] = useState<Step[]>([
     { stepNumber: 1, description: '' }])
+  const [sharingId, setSharingId] = useState<string | null>(null)
 
   function fetchRecipes() {
     api.get('/recipes')
@@ -73,6 +87,7 @@ function RecipesPage() {
       setServings(''),
       setIngredients([{ name: '', quantity: '', unit: '' }])
       setSteps([{ stepNumber: 1, description: '' }])
+      toast.success("Recipe has been added.")
     }).catch(err => console.log(err))
   }
 
@@ -112,7 +127,7 @@ function RecipesPage() {
       {/* Header */}
       <div className="flex items-center justify-between mb-8">
         <h1 className="text-4xl font-bold">My Recipes</h1>
-        <Button onClick={() => setShowForm(!showForm)}>
+        <Button size="lg" onClick={() => setShowForm(!showForm)}>
           {showForm ? 'Cancel' : '+ Add Recipe'}
         </Button>
       </div>
@@ -120,8 +135,15 @@ function RecipesPage() {
       {/* Add Recipe Form */}
       {showForm && (
         <div className="bg-card border rounded-xl p-6 mb-8">
-          <h2 className="text-lg font-semibold mb-4">New Recipe</h2>
-          <div className="grid grid-cols-3 gap-10 mb-4">
+          <div className="flex mb-4">
+            <h2 className="text-lg font-semibold">New Recipe</h2>
+            <ToggleGroup disabled className="ml-5" type="single" spacing={5} variant="outline">
+              <ToggleGroupItem value="manual">Input Manually</ToggleGroupItem>
+              <ToggleGroupItem value="text">Import by Copy & Paste</ToggleGroupItem>
+              <ToggleGroupItem value="import">Import via Link</ToggleGroupItem>
+            </ToggleGroup>
+          </div>
+          <div className="grid md:grid-cols-3 grid-cols-1 gap-10 mb-4">
             {/* First column */}
             <div>
               <div className="mb-5">
@@ -172,7 +194,13 @@ function RecipesPage() {
                     value={ingredient.unit}
                     onChange={e => updateIngredient(index, 'unit', e.target.value)}
                   />
-                  <Button onClick={addIngredient}>Add</Button>
+                  {index === ingredients.length - 1 ? (
+                    // Last row — show Add button
+                    <Button variant="outline" onClick={addIngredient}>+</Button>
+                  ) : (
+                    // All other rows — show Delete button
+                    <Button variant="destructive" onClick={() => removeIngredient(index)}>✕</Button>
+                  )}
                 </div>
               ))}
             </div>
@@ -180,23 +208,25 @@ function RecipesPage() {
             <div>
               <label className="text-sm text-accent-foreground mb-1 block">Steps</label>
               {steps.map((step, index) => (
-                <div key={index} className="flex gap-2">
-                  <Input
-                    placeholder="Name"
-                    value={step.stepNumber}
-                    onChange={e => updateStep(index, e.target.value)}
-                  />
+                <div key={index} className="flex items-center gap-2">
+                  <span className="self-center text-sm text-muted-foreground w-6 text-center shrink-0">
+                    {step.stepNumber}.
+                  </span>
                   <Input
                     placeholder="Description"
                     value={step.description}
                     onChange={e => updateStep(index, e.target.value)}
                   />
-                  <Button onClick={addStep}>Add</Button>
+                  {index === steps.length - 1 ? (
+                    <Button variant="outline" onClick={addStep}>+</Button>
+                  ) : (
+                    <Button variant="destructive" onClick={() => removeStep(index)}>✕</Button>
+                  )}
                 </div>
               ))}
             </div>
           </div>
-          <Button onClick={addRecipe}>Save Recipe</Button>
+          <Button size="lg" onClick={addRecipe}>Save Recipe</Button>
         </div>
       )}
 
@@ -211,19 +241,41 @@ function RecipesPage() {
       {/* Recipe Grid */}
       <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4">
         {recipes.map(recipe => (
-          <Card key={recipe.id} className="hover:shadow-md transition-shadow cursor-pointer">
-            <CardHeader>
-              <CardTitle className="text-lg">{recipe.title}</CardTitle>
-            </CardHeader>
-            <CardContent>
-              <p className="text-sm text-muted-foreground">
-                {recipe.timeMinutes} min
-              </p>
-              <p className="text-sm text-muted-foreground">
-                {recipe.servings} servings
-              </p>
-            </CardContent>
-          </Card>
+          <div key={recipe.id}>
+            <Card className="hover:shadow-md transition-shadow cursor-pointer">
+              <CardHeader>
+                <CardTitle className="text-lg">{recipe.title}</CardTitle>
+              </CardHeader>
+              <CardContent>
+                <p className="text-sm text-muted-foreground">
+                  {recipe.timeMinutes} min
+                </p>
+                <p className="text-sm text-muted-foreground">
+                  {recipe.servings} servings
+                </p>
+                <Button variant="outline" onClick={() => setSharingId(recipe.id)}>Share Rating Link</Button>
+              </CardContent>
+            </Card>
+
+            {/* QR code */}
+            <Dialog open={sharingId === recipe.id} onOpenChange={() => setSharingId(null)}>
+              <DialogContent showCloseButton={false}>
+                <DialogHeader>
+                  <DialogTitle>Rating QR Code</DialogTitle>
+                  <DialogDescription>Show this QR code to your friends who tried the meal!</DialogDescription>
+                </DialogHeader>
+                <QRCodeSVG
+                  value={`http://localhost:5173/rate/${recipe.id}`}
+                  size={200}
+                />
+                <DialogFooter className="sm:justify-start">
+                  <DialogClose asChild>
+                    <Button type="button">Close</Button>
+                  </DialogClose>
+                </DialogFooter>
+              </DialogContent>
+            </Dialog>
+          </div>
         ))}
       </div>
     </div>
