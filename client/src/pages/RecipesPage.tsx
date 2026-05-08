@@ -265,7 +265,7 @@ function RecipesPage() {
                   <DialogDescription>Show this QR code to your friends who tried the meal!</DialogDescription>
                 </DialogHeader>
                 <QRCodeSVG
-                  value={`http://localhost:5173/rate/${recipe.id}`}
+                  value={`https://recipe-kitchen-app-sigma.vercel.app/rate/${recipe.id}`}
                   size={200}
                 />
                 <DialogFooter className="sm:justify-start">
