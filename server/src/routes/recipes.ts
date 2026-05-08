@@ -3,6 +3,40 @@ import prisma from '../lib/prisma.ts'
 
 const router = express.Router()
 
+// POST create rating
+router.post('/:id/ratings', async (req, res) => {
+    try {
+        const { name, rating, comment } = req.body
+        const newRating = await prisma.rating.create({
+            data: {
+                recipeId: req.params.id,
+                name,
+                rating,
+                comment,
+            }
+        })
+        res.json(newRating)
+    } catch (error) {
+        console.error(error)
+        res.status(500).json({error: 'Failed to create rating'})
+    }
+})
+
+// GET all ratings by recipe id
+router.get('/:id/ratings', async (req, res) => {
+    try { 
+        const ratings = await prisma.rating.findMany({
+            where: {recipeId: req.params.id},
+            orderBy: { createdAt: 'desc' }
+        })
+        res.json(ratings)
+    } catch (error) {
+        console.error(error)
+        res.status(500).json({error: 'Failed to get ratings'})
+    }
+})
+
+
 // POST create recipe
 router.post('/', async (req, res) => {
     try { 

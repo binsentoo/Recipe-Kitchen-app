@@ -1,6 +1,8 @@
 import { BrowserRouter, Routes, Route } from 'react-router-dom'
 import RecipesPage from './pages/RecipesPage'
 import FridgePage from './pages/FridgePage'
+import RatingPage from './pages/RatingPage'
+import { Toaster } from "@/components/ui/sonner"
 
 function App() {
   return (
@@ -8,7 +10,9 @@ function App() {
       <Routes>
         <Route path="/" element={<RecipesPage/>} />
         <Route path="/fridge" element={<FridgePage/>} />
-      </Routes>  
+        <Route path="/rate/:id" element={<RatingPage/>} />
+      </Routes>
+      <Toaster/>
     </BrowserRouter>
   )
 }

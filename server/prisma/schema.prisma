@@ -19,6 +19,7 @@ model Recipe {
   servings      Int
   steps         RecipeStep[]
   ingredients   RecipeIngredient[]
+  ratings     Rating[]
 }
 
 model RecipeIngredient {
@@ -49,4 +50,15 @@ model FridgeItem {
   expiration    DateTime
 
   //fridge Fridge @relation(fields: [fridgeId], references: [id], onDelete: Cascade)
+}
+
+model Rating {
+  id            String @id @default(cuid())
+  recipeId      String
+  name          String
+  rating        Int
+  comment       String?
+  createdAt     DateTime @default(now())
+
+  recipe Recipe @relation(fields: [recipeId], references: [id], onDelete: Cascade)
 }
