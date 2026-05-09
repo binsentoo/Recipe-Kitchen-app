@@ -7,23 +7,14 @@ import { Spinner } from "@/components/ui/spinner"
 import { ButtonGroup } from "@/components/ui/button-group"
 import { ToggleGroup, ToggleGroupItem } from "@/components/ui/toggle-group"
 import { toast } from "sonner"
-import { Textarea } from "@/components/ui/textarea"
-import { QRCodeSVG } from 'qrcode.react'
-import {
-  Dialog,
-  DialogContent,
-  DialogDescription,
-  DialogFooter,
-  DialogHeader,
-  DialogTitle,
-  DialogClose,
-} from "@/components/ui/dialog"
+import { useNavigate } from 'react-router-dom'
 
 interface Recipe {
   id: string
   title: string
   timeMinutes: number
   servings: number
+  averageRating: number
 }
 
 interface Ingredient {
@@ -48,7 +39,7 @@ function RecipesPage() {
   { name: '', quantity: '', unit: '' }])
   const [steps, setSteps] = useState<Step[]>([
     { stepNumber: 1, description: '' }])
-  const [sharingId, setSharingId] = useState<string | null>(null)
+  const navigate = useNavigate()
 
   function fetchRecipes() {
     api.get('/recipes')
@@ -242,39 +233,24 @@ function RecipesPage() {
       <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4">
         {recipes.map(recipe => (
           <div key={recipe.id}>
-            <Card className="hover:shadow-md transition-shadow cursor-pointer">
+            <Card onClick={() => navigate(`/recipe/${recipe.id}`)} className="hover:shadow-md transition-shadow cursor-pointer">
               <CardHeader>
                 <CardTitle className="text-lg">{recipe.title}</CardTitle>
               </CardHeader>
               <CardContent>
+                {recipe.averageRating && (
+                  <p className="text-sm text-muted-foreground">
+                    ⭐ {recipe.averageRating.toFixed(1)}
+                  </p>
+                )}
                 <p className="text-sm text-muted-foreground">
                   {recipe.timeMinutes} min
                 </p>
-                <p className="text-sm text-muted-foreground">
+                <p className="text-sm text-muted-foreground mb-3">
                   {recipe.servings} servings
                 </p>
-                <Button variant="outline" onClick={() => setSharingId(recipe.id)}>Share Rating Link</Button>
               </CardContent>
             </Card>
-
-            {/* QR code */}
-            <Dialog open={sharingId === recipe.id} onOpenChange={() => setSharingId(null)}>
-              <DialogContent showCloseButton={false}>
-                <DialogHeader>
-                  <DialogTitle>Rating QR Code</DialogTitle>
-                  <DialogDescription>Show this QR code to your friends who tried the meal!</DialogDescription>
-                </DialogHeader>
-                <QRCodeSVG
-                  value={`https://recipe-kitchen-app-sigma.vercel.app/rate/${recipe.id}`}
-                  size={200}
-                />
-                <DialogFooter className="sm:justify-start">
-                  <DialogClose asChild>
-                    <Button type="button">Close</Button>
-                  </DialogClose>
-                </DialogFooter>
-              </DialogContent>
-            </Dialog>
           </div>
         ))}
       </div>
