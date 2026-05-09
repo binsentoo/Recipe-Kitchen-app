@@ -56,7 +56,7 @@ model Rating {
   id            String @id @default(cuid())
   recipeId      String
   name          String
-  rating        Int
+  rating        Float
   comment       String?
   createdAt     DateTime @default(now())
 

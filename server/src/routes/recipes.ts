@@ -72,13 +72,20 @@ router.get('/:id', async (req, res) => {
             where: { id: req.params.id },
             include: {
                 ingredients: true,
-                steps: true
+                steps: true,
+                ratings: true
             }
         })
         if (!recipe) {
             return res.status(404).json({ error: 'Recipe not found via id: ' + req.params.id })
         }
-        res.json(recipe)
+        const recipeswithAvg = {
+            ...recipe,
+            averageRating: recipe.ratings.length > 0
+                ? recipe.ratings.reduce((sum, r) => sum + r.rating, 0) / recipe.ratings.length
+                : null
+        }
+        res.json(recipeswithAvg)
     } catch (error) {
         console.error(error)
         res.status(500).json({ error: 'Failed to fetch recipe via id: ' + req.params.id })
@@ -91,10 +98,18 @@ router.get('/', async (req, res) => {
         const recipes = await prisma.recipe.findMany({
             include: {
                 ingredients: true,
-                steps: true
+                steps: true,
+                ratings: true
             }
         })
-        res.json(recipes)
+        // add ratings average to response 
+        const recipeswithAvg = recipes.map(recipe => ({
+            ...recipe,
+            averageRating: recipe.ratings.length > 0
+                ? recipe.ratings.reduce((sum, r) => sum + r.rating, 0) / recipe.ratings.length
+                : null
+        }))
+        res.json(recipeswithAvg)
     } catch (error) {
         console.error(error)
         res.status(500).json({ error: 'Failed to fetch recipes'})
