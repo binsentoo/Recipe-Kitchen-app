@@ -106,7 +106,7 @@ function RatingPage() {
             </Field>
             <Field>
               <FieldLabel htmlFor="comment">Comment</FieldLabel>
-              <Textarea id="comment" onChange={e => setName(e.target.value)} />
+              <Textarea id="comment" onChange={e => setComment(e.target.value)} />
             </Field>
             <Button onClick={submitRating}>Submit</Button>
           </FieldGroup>
