@@ -237,6 +237,8 @@ function RecipesPage() {
               <CardHeader>
                 <CardTitle className="text-lg">{recipe.title}</CardTitle>
               </CardHeader>
+
+              {/* Recipe Card */}
               <CardContent>
                 {recipe.averageRating && (
                   <p className="text-sm text-muted-foreground">

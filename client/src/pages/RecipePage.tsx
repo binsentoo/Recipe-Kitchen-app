@@ -61,6 +61,13 @@ function RecipePage() {
     .finally(() => setLoading(false))
   }
 
+  function deleteRecipe() {
+    if (!confirm('Delete this recipe? This cannot be undone.')) return
+    api.delete(`/recipes/${id}`)
+      .then(() => navigate('/'))
+      .catch(err => console.log(err))
+  }
+
   useEffect(() => {
     fetchRecipe()
   }, [])
@@ -83,7 +90,7 @@ function RecipePage() {
       {/* Header */}
       <div className="flex items-center justify-between mb-3">
         <Button variant="ghost" onClick={() => navigate('/')}>← Back</Button>
-        <Button variant="destructive">Delete</Button>
+        <Button variant="destructive" onClick={deleteRecipe}>Delete</Button>
       </div>
       {/* Title */}
       <div className="mb-3">
@@ -136,8 +143,6 @@ function RecipePage() {
           ))}
         </ul>
       </div>
-
-
 
       {/* QR code */}
       <Dialog open={sharingId === recipe.id} onOpenChange={() => setSharingId(null)}>
